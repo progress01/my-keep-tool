@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>防彈筆記：完全體 V16</title>
+    <title>防彈筆記：V20 (智慧防重複版)</title>
     <style>
         :root {
             --keep-yellow: #fbbc04;
             --keep-dark: #202124;
             --google-blue: #4285f4;
+            --google-green: #34a853;
             --bg-color: #f0f2f5;
             --tag-purple: #a142f4;
             --setting-gray: #5f6368;
@@ -74,6 +75,7 @@
             padding-left: 10px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         
         .title-resource { border-left-color: var(--google-blue); color: #1967d2; }
@@ -111,8 +113,9 @@
             background-color: #f8fbff;
             font-family: monospace;
             font-size: 14px;
-            white-space: pre; 
-            overflow-x: auto;
+            white-space: pre-wrap; 
+            overflow-wrap: anywhere; 
+            overflow-x: hidden;
             min-height: 120px;
         }
         textarea.resource-box:focus { border-color: var(--google-blue); background-color: #fff; }
@@ -125,7 +128,6 @@
         }
         textarea.tag-box:focus { border-color: var(--tag-purple); background-color: #fff; }
 
-        /* 設定提醒區塊 (唯讀提示) */
         .setting-hint-box {
             background-color: #f5f5f5;
             border: 1px dashed #999;
@@ -136,6 +138,7 @@
             line-height: 1.6;
         }
 
+        /* 按鈕 */
         .btn {
             width: 100%;
             padding: 12px;
@@ -151,7 +154,18 @@
         .btn-load { background-color: var(--keep-yellow); color: #333; }
         .btn-gen { background-color: var(--keep-dark); color: white; }
         .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn:active { transform: translateY(0); }
+
+        .btn-tiny {
+            background-color: var(--google-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-tiny:hover { background-color: #3367d6; }
 
         .load-zone { background-color: #2d2d2d; color: #fff; border: 2px dashed #555; }
         .load-zone textarea { background: #1a1a1a; color: #0f0; border: 1px solid #444; width: 100%; padding: 10px; box-sizing: border-box; }
@@ -174,7 +188,7 @@
 <div class="dashboard">
 
     <div class="editor-panel">
-        <h2>📝 防彈筆記 V16 (Keep設定整合)</h2>
+        <h2>📝 防彈筆記 V20 (智慧分流版)</h2>
         
         <div class="section-wrapper">
             <div class="section-title">💬 狀態更新 (Status)</div>
@@ -182,8 +196,11 @@
         </div>
 
         <div class="section-wrapper">
-            <div class="section-title title-resource">📚 專案資源庫 (Links)</div>
-            <textarea id="resources" class="input-box resource-box" placeholder="[攻略本] https://...&#10;[參考圖] https://..."></textarea>
+            <div class="section-title title-resource">
+                📚 專案資源庫 (Links)
+                <button class="btn-tiny" onclick="formatLinks()">✨ 整理連結 (智慧斷行)</button>
+            </div>
+            <textarea id="resources" class="input-box resource-box" placeholder="貼上混亂的網址後，按上面的「整理」按鈕！"></textarea>
         </div>
 
         <div class="section-wrapper">
@@ -202,17 +219,14 @@
             <div class="section-title">A. 暖身準備 (Ready)</div>
             <textarea id="qa_a" class="input-box"></textarea>
         </div>
-
         <div class="section-wrapper">
             <div class="section-title">B. 核心任務 (Main)</div>
             <textarea id="qa_b" class="input-box"></textarea>
         </div>
-
         <div class="section-wrapper">
             <div class="section-title">C. 成果交付 (Delivery)</div>
             <textarea id="qa_c" class="input-box"></textarea>
         </div>
-
         <div class="section-wrapper">
             <div class="section-title">D. 經驗存檔 (Review)</div>
             <textarea id="qa_d" class="input-box"></textarea>
@@ -228,63 +242,94 @@
         <div class="section-wrapper">
             <div class="section-title title-settings">⚙️ 設定檢查 (Settings)</div>
             <div class="setting-hint-box">
-                此區塊會自動生成檢查清單與工具連結，提醒您：<br>
-                1. 🔴 紅色=緊急 / 🟢 綠色=穩定<br>
-                2. ⏰ 設定每月提醒 / 📍 設定地點提醒 (公司/家)<br>
-                3. 🔗 附上此工具網址 (方便下次編輯)
+                提醒您：<br>
+                1. 🔴紅色(急) / 🟢綠色(穩)<br>
+                2. ⏰時間提醒 / 📍地點提醒<br>
+                3. 自動附上工具連結
             </div>
-            </div>
-
+        </div>
     </div>
 
     <div class="tools-panel">
-        
         <div class="card load-zone">
             <h3>📥 讀取舊進度</h3>
-            <textarea id="paste-area" placeholder="貼上 Keep 筆記 (包含最下方的連結也沒關係)..."></textarea>
+            <textarea id="paste-area" placeholder="貼上 Keep 筆記..."></textarea>
             <button class="btn btn-load" onclick="loadFromKeep()">🔄 解析並填入左側</button>
         </div>
-
         <div class="card result-zone">
             <h3>📤 最終結果</h3>
             <textarea id="final-result" readonly></textarea>
             <button class="btn btn-gen" onclick="copyResult()">✨ 全選並複製</button>
         </div>
-
     </div>
 
 </div>
 
 <script>
-    // 自動長高與即時生成
     document.querySelectorAll('textarea').forEach(el => {
         el.addEventListener('input', function() { autoGrow(this); generate(); });
     });
     function autoGrow(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
     function triggerResizeAll() { document.querySelectorAll('.input-box').forEach(autoGrow); }
 
-    // --- 讀取邏輯 (Load) ---
+    function formatLinks() {
+        const box = document.getElementById('resources');
+        let text = box.value;
+        text = text.replace(/([^\n])(\[)/g, '$1\n$2');
+        text = text.replace(/([^\n])(https?:\/\/)/g, '$1\n$2');
+        box.value = text;
+        autoGrow(box);
+        generate();
+    }
+
+    // --- V20 核心：智慧截斷邏輯 ---
     function loadFromKeep() {
         const text = document.getElementById('paste-area').value;
         if (!text.trim()) { alert("請先貼上內容！"); return; }
         
-        function extract(start, end) {
+        // 增強版提取函數 (支援排除關鍵字)
+        function extract(start, end, excludeList = []) {
             const sIdx = text.indexOf(start);
             if (sIdx === -1) return "";
-            if (end && text.indexOf(end) !== -1) return text.substring(sIdx + start.length, text.indexOf(end)).trim();
-            // 如果沒找到結束標記，可能是在讀取最後一個欄位
-            return text.substring(sIdx + start.length).trim();
+            
+            let content = "";
+            let subText = text.substring(sIdx + start.length); // 先抓起點之後的所有內容
+            
+            // 找出最近的結束點 (可能是 end 標記，也可能是其他欄位的標題)
+            let minEndIdx = subText.length;
+            
+            if (end && subText.indexOf(end) !== -1) {
+                minEndIdx = Math.min(minEndIdx, subText.indexOf(end));
+            }
+            
+            // *關鍵修正*：檢查是否撞到其他欄位的標題 (防止吃掉後面的內容)
+            if (excludeList.length > 0) {
+                excludeList.forEach(marker => {
+                    const markerIdx = subText.indexOf(marker);
+                    if (markerIdx !== -1) {
+                        minEndIdx = Math.min(minEndIdx, markerIdx);
+                    }
+                });
+            }
+
+            return subText.substring(0, minEndIdx).trim();
         }
+
         function clean(txt) {
             return txt.split('\n').map(l => l.replace(/^[\s\t]*[•-]\s*\[.?\]\s*/, '').trim()).filter(l=>l.length>0).join('\n');
         }
 
         document.getElementById('status').value = extract("• 狀態/下一步：", "• 資源庫：");
+        
+        // 資源庫：防止吃到備註
         document.getElementById('resources').value = extract("• 資源庫：", "• 備註/防雷：");
-        document.getElementById('memo').value = extract("• 備註/防雷：", "---");
+        
+        // 備註：*防止吃到目標或分隔線* (這就是你遇到的問題)
+        // 我們告訴它：如果看到 "---" OR "🛡️ 任務核心" OR "1. 目標"，都要停下來
+        document.getElementById('memo').value = extract("• 備註/防雷：", "---", ["🛡️ 任務核心", "1. 目標"]);
         
         const goal = extract("1. 目標：", "2. 風險：");
-        const risk = extract("2. 風險：", "---");
+        const risk = extract("2. 風險：", "---", ["✅ 執行清單", "A. 暖身準備"]);
         document.getElementById('goal_risk').value = "目標：" + goal + "\n風險：" + risk.replace("⚠️ ", "");
 
         document.getElementById('qa_a').value = clean(extract("A. 暖身準備", "B. 核心任務"));
@@ -292,7 +337,6 @@
         document.getElementById('qa_c').value = clean(extract("C. 成果交付", "D. 經驗存檔"));
         document.getElementById('qa_d').value = clean(extract("D. 經驗存檔", "🏷️ 關鍵字："));
         
-        // 關鍵字讀取到 "⚙️ 設定檢查" 之前
         document.getElementById('tags').value = extract("🏷️ 關鍵字：", "⚙️ 設定檢查");
 
         triggerResizeAll(); 
@@ -300,7 +344,6 @@
         document.querySelector('.editor-panel').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- 生成邏輯 (Generate) ---
     function generate() {
         const s = document.getElementById('status').value || "（更新中）";
         const res = document.getElementById('resources').value || "（請貼上 SOP 與連結）"; 
@@ -308,8 +351,6 @@
         const gr = document.getElementById('goal_risk').value || "目標：確保無誤\n風險：時間緊迫";
         const tags = document.getElementById('tags').value || "#通用"; 
         
-        // 獲取當前頁面的網址，方便以後點擊
-        // 如果是本地檔案，會顯示 file://...，建議部署後會更好看
         const currentUrl = window.location.href;
 
         function fmt(val, def) {
